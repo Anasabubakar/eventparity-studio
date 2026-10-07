@@ -148,3 +148,11 @@ footer.site { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 
 .field.changed { background: var(--incomplete-bg); border-radius: 3px; font-weight: 600; }
 .small { font-size: .8rem; }
 @media (max-width: 40rem) { .cols { grid-template-columns: 1fr; } }
+
+/* Narrow-screen containment: nothing may force the layout wider than the viewport. */
+.controls > *, main > *, .report > *, .card > *, .diff > * { min-width: 0; }
+.facts { grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); }
+select, input, textarea { max-width: 100%; min-width: 0; }
+@media (max-width: 36rem) { .facts { grid-template-columns: minmax(0, 1fr); } }
+
+code { overflow-wrap: anywhere; word-break: break-all; }
