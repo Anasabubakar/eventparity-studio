@@ -1,6 +1,6 @@
 {
-  "studio": "0.1.0",
+  "studio": "0.1.2",
   "pairs": [
-    { "engine": "eventparity-engine", "version": "0.1.0", "reportVersion": "1", "status": "tested" }
+    { "engine": "eventparity-engine", "version": "0.1.2", "reportVersion": "1", "status": "tested" }
   ]
 }
