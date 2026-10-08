@@ -65,3 +65,9 @@ pnpm run typecheck && pnpm test && pnpm run build   # 30 tests (jsdom)
 - No ingestion maintainer has reviewed the explorer or the report format.
 
 MIT licensed.
+
+## Contributors
+
+<a href="https://github.com/Anasabubakar/eventparity-studio/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Anasabubakar/eventparity-studio" alt="Contributors to eventparity-studio" />
+</a>
