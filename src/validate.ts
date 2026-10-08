@@ -1,6 +1,6 @@
 import pairing from "../vendor/eventparity-engine/VERSION.json";
 import validateSchema from "./generated/validateReport.js";
-import type { Report } from "./types.ts";
+import type { Range, Report } from "./types.ts";
 
 type SchemaError = { instancePath: string; message?: string };
 const check = validateSchema as unknown as ((data: unknown) => boolean) & { errors?: SchemaError[] | null };
@@ -21,7 +21,49 @@ export function parseReportText(text: string): LoadResult {
   return validateReport(raw);
 }
 
-const rangeLen = (rs: Array<{ from: number; to: number }>) => rs.reduce((n, r) => n + (r.to - r.from + 1), 0);
+const sortedRanges = (rs: Range[]): Range[] => [...rs].sort((a, b) => a.from - b.from || a.to - b.to);
+
+/** Merge ranges that touch or overlap into the smallest equivalent list. */
+function coalesce(rs: Range[]): Range[] {
+  const out: Range[] = [];
+  for (const r of rs) {
+    const last = out[out.length - 1];
+    if (last && r.from <= last.to + 1) last.to = Math.max(last.to, r.to);
+    else out.push({ from: r.from, to: r.to });
+  }
+  return out;
+}
+
+function intersect(a: Range[], b: Range[]): Range[] {
+  const out: Range[] = [];
+  for (const x of a) {
+    for (const y of b) {
+      const from = Math.max(x.from, y.from);
+      const to = Math.min(x.to, y.to);
+      if (from <= to) out.push({ from, to });
+    }
+  }
+  return coalesce(sortedRanges(out));
+}
+
+const sameRanges = (a: Range[], b: Range[]) => a.length === b.length && a.every((r, i) => r.from === b[i]!.from && r.to === b[i]!.to);
+
+/**
+ * Covered ranges and gaps must tile the requested range exactly: every range well formed and inside the request,
+ * no two ranges overlapping, no ledger left unaccounted for. Summed lengths alone prove none of that.
+ */
+function partitionProblem(req: Range, covered: Range[], gaps: Range[]): string | null {
+  const all = sortedRanges([...covered, ...gaps]);
+  let next = req.from;
+  for (const r of all) {
+    if (!Number.isInteger(r.from) || !Number.isInteger(r.to) || r.from > r.to) return "has a reversed or non-integer ledger range";
+    if (r.from < req.from || r.to > req.to) return "has coverage or a gap outside the requested range";
+    if (r.from < next) return "has overlapping coverage and gap ranges";
+    if (r.from > next) return "leaves requested ledgers neither covered nor reported as gaps";
+    next = r.to + 1;
+  }
+  return next === req.to + 1 ? null : "leaves requested ledgers neither covered nor reported as gaps";
+}
 
 /**
  * Beyond the schema, a report must not claim more than its own evidence supports. In particular a report can never
@@ -47,11 +89,20 @@ export function validateReport(raw: unknown): LoadResult {
   if (r.verdict === "inconclusive" && (r.differences.length > 0 || gaps === 0)) {
     return { ok: false, error: "Inconsistent report: an inconclusive verdict requires coverage gaps and no differences." };
   }
-  const requested = r.requested.to - r.requested.from + 1;
+  const req = r.requested;
+  if (!Number.isInteger(req.from) || !Number.isInteger(req.to) || req.from > req.to) {
+    return { ok: false, error: "Inconsistent report: the requested ledger range is empty or reversed." };
+  }
+  const coveredBySide: Range[][] = [];
   for (const side of [r.reference, r.candidate]) {
-    if (rangeLen(side.covered) + rangeLen(side.gaps) !== requested) {
-      return { ok: false, error: `Inconsistent report: ${side.name} coverage and gaps do not account for every requested ledger.` };
-    }
+    const problem = partitionProblem(req, side.covered, side.gaps);
+    if (problem) return { ok: false, error: `Inconsistent report: ${side.name} ${problem}.` };
+    coveredBySide.push(coalesce(sortedRanges(side.covered)));
+  }
+  const expected = intersect(coveredBySide[0]!, coveredBySide[1]!);
+  const claimed = coalesce(sortedRanges(r.compared));
+  if (!sameRanges(expected, claimed)) {
+    return { ok: false, error: "Inconsistent report: the compared ledgers are not exactly the ledgers both sides covered." };
   }
   const notes: string[] = [];
   if (r.tool.version !== TESTED_ENGINE.version) {

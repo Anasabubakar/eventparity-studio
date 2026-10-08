@@ -58,7 +58,7 @@ describe("report validation", () => {
     r.candidate.covered[0].to -= 1;
     const res = validateReport(r);
     expect(res).toMatchObject({ ok: false });
-    if (!res.ok) expect(res.error).toMatch(/account for every requested ledger/);
+    if (!res.ok) expect(res.error).toMatch(/neither covered nor reported as gaps/);
   });
 
   it("rejects malformed hashes and amounts", () => {
@@ -81,5 +81,58 @@ describe("report validation", () => {
   it("rejects non-JSON and oversized input", () => {
     expect(parseReportText("{nope")).toMatchObject({ ok: false });
     expect(parseReportText(" ".repeat(5_000_001))).toMatchObject({ ok: false });
+  });
+
+  describe("coverage must tile the requested range exactly", () => {
+    const rejected = (mutate: (r: any) => void, pattern: RegExp) => {
+      const r = raw("report-parity");
+      mutate(r);
+      const res = validateReport(r);
+      expect(res.ok).toBe(false);
+      if (!res.ok) expect(res.error).toMatch(pattern);
+    };
+    it("overlapping covered ranges whose lengths still sum to the request (5 of 9 ledgers)", () => {
+      rejected((r) => {
+        const { from } = r.requested;
+        r.reference.covered = [{ from, to: from + 4 }, { from, to: from + 3 }];
+        r.candidate.covered = [{ from, to: from + 4 }, { from, to: from + 3 }];
+        r.compared = [{ from, to: from + 4 }];
+      }, /overlapping/);
+    });
+    it("coverage entirely outside the requested range", () => {
+      rejected((r) => {
+        const n = r.requested.to - r.requested.from;
+        for (const s of [r.reference, r.candidate]) s.covered = [{ from: 5071750, to: 5071750 + n }];
+        r.compared = [{ from: 5071750, to: 5071750 + n }];
+      }, /outside the requested range/);
+    });
+    it("a reversed range", () => {
+      rejected((r) => {
+        r.reference.covered = [{ from: r.requested.to, to: r.requested.from }];
+      }, /reversed/);
+    });
+    it("a reversed or empty requested range", () => {
+      rejected((r) => {
+        r.requested = { from: r.requested.to, to: r.requested.from };
+      }, /empty or reversed/);
+    });
+    it("a hole between covered ranges", () => {
+      rejected((r) => {
+        const { from, to } = r.requested;
+        r.candidate.covered = [{ from, to: from + 1 }, { from: from + 3, to }];
+      }, /neither covered nor reported/);
+    });
+    it("an inconsistent compared list", () => {
+      rejected((r) => {
+        r.compared = [{ from: r.requested.from, to: r.requested.from }];
+      }, /compared ledgers/);
+    });
+    it("accepts the same coverage given in a different order and split into adjacent pieces", () => {
+      const r = raw("report-parity");
+      const { from, to } = r.requested;
+      const mid = from + 2;
+      r.reference.covered = [{ from: mid + 1, to }, { from, to: mid }];
+      expect(validateReport(r).ok).toBe(true);
+    });
   });
 });
