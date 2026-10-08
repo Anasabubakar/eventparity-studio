@@ -1,8 +1,13 @@
+<p align="center"><img src="docs/assets/banner.svg" alt="eventparity-studio" width="100%"></p>
+
 # eventparity-studio
 
-**Documentation:** https://stellar-developer-tools.gitbook.io/eventparity-studio/
+[![CI](https://github.com/Event-Parity/eventparity-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Event-Parity/eventparity-studio/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Release](https://img.shields.io/github/v/release/Event-Parity/eventparity-studio)](https://github.com/Event-Parity/eventparity-studio/releases)
 
-The report explorer for [EventParity](https://github.com/Anasabubakar/eventparity-engine) reports: did changing your Stellar data source change your payment records?
+[Documentation](https://stellar-developer-tools.gitbook.io/eventparity-studio/) · [Live demo](https://eventparity-studio-anasamasama.vercel.app) · [Core repository](https://github.com/Event-Parity/eventparity-engine) · [Issues](https://github.com/Event-Parity/eventparity-studio/issues) · [Discussions](https://github.com/Event-Parity/eventparity-studio/discussions)
+
+
+The report explorer for [EventParity](https://github.com/Event-Parity/eventparity-engine) reports: did changing your Stellar data source change your payment records?
 
 It reads a report produced by `eventparity-engine`, shows the verdict (**parity**, **differences** or **inconclusive**), draws what each source actually covered, and lists every difference with the exact evidence from both sides. It computes no verdict of its own: everything on the page comes from the report JSON, and the page refuses reports that contradict themselves (for example one that claims parity while a source has a coverage gap).
 
@@ -13,7 +18,7 @@ Hosted demo: https://eventparity-studio-anasamasama.vercel.app
 Node 22 or newer and pnpm.
 
 ```bash
-git clone https://github.com/Anasabubakar/eventparity-studio.git
+git clone https://github.com/Event-Parity/eventparity-studio.git
 cd eventparity-studio
 pnpm install --frozen-lockfile
 pnpm dev            # or: pnpm build && pnpm preview
@@ -68,8 +73,42 @@ pnpm run typecheck && pnpm test && pnpm run build   # 30 tests (jsdom)
 
 MIT licensed.
 
+## Repository layout
+
+- `docs/`: decision records (ADRs), evidence and assets
+- `gitbook/`: source of the GitBook documentation
+- `scripts/`: build, generation and recording scripts
+- `src/`: source
+- `test/`: tests
+- `vendor/`: pinned artifacts from the paired core repository
+
+## Documentation
+
+The full documentation is at https://stellar-developer-tools.gitbook.io/eventparity-studio/. It is built from the `gitbook/` folder of this repository and synced from `main`, so a fix to a page is a pull request here.
+
+## Contributing
+
+Open issues are scoped so one person can finish one in a single cycle, and each lists acceptance criteria. Read [CONTRIBUTING.md](CONTRIBUTING.md), pick an issue from the [issue list](https://github.com/Event-Parity/eventparity-studio/issues), and say you are taking it before you start. Security reports go through [SECURITY.md](SECURITY.md), not public issues.
+
+## Maintainers
+
+| Maintainer | Role | GitHub |
+|---|---|---|
+| Anas Abubakar | Lead maintainer | [@Anasabubakar](https://github.com/Anasabubakar) |
+| Abdulbasit Fazazi | Co-maintainer | [@fazaziishola-coder](https://github.com/fazaziishola-coder) |
+
+## Community
+
+Questions and design discussion go in [GitHub Discussions](https://github.com/Event-Parity/eventparity-studio/discussions). Bugs and scoped work go in [Issues](https://github.com/Event-Parity/eventparity-studio/issues).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
 ## Contributors
 
-<a href="https://github.com/Anasabubakar/eventparity-studio/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Anasabubakar/eventparity-studio" alt="Contributors to eventparity-studio" />
+Thanks to all the contributors who have made this project possible.
+
+<a href="https://github.com/Event-Parity/eventparity-studio/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Event-Parity/eventparity-studio" alt="Contributors to eventparity-studio" />
 </a>
