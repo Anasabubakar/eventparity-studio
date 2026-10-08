@@ -4,7 +4,7 @@ The report explorer for [EventParity](https://github.com/Anasabubakar/eventparit
 
 It reads a report produced by `eventparity-engine`, shows the verdict (**parity**, **differences** or **inconclusive**), draws what each source actually covered, and lists every difference with the exact evidence from both sides. It computes no verdict of its own: everything on the page comes from the report JSON, and the page refuses reports that contradict themselves (for example one that claims parity while a source has a coverage gap).
 
-Hosted demo: not deployed yet (see Status). Run it locally below.
+Hosted demo: https://eventparity-studio-anasamasama.vercel.app
 
 ## Run
 
