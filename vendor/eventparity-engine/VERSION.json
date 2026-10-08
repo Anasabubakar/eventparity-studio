@@ -1,7 +1,7 @@
 {
   "package": "eventparity-engine",
-  "version": "0.1.0",
-  "commit": "03297ef21884c9e4483dfecab8a30593e2e64100",
+  "version": "0.1.2",
+  "commit": "61af928a8c2903149ad942b71036c37881dd287b",
   "reportVersion": "1",
   "module": "module github.com/Anasabubakar/eventparity-engine",
   "vendoredFor": "eventparity-studio"
